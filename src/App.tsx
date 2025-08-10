@@ -35,88 +35,91 @@ export default function App() {
 
   return (
     <main style={{
-      minHeight: '100vh',
-      background: 'var(--bg)',
-      padding: 'var(--container-pad)',
-      fontFamily: "'Poppins', sans-serif"
+      minHeight:'100vh',
+      background:'var(--bg)',
+      padding:'var(--container-pad)',
+      fontFamily:"'Poppins',sans-serif"
     }}>
-      <section style={{ maxWidth: 960, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: 10 }}>
+      <section style={{maxWidth:1080, margin:'0 auto'}}>
+        {/* Header (only one now) */}
+        <div style={{textAlign:'center', marginBottom:12}}>
           <h1 style={{
-            fontSize: 'var(--h1-size)',
-            fontWeight: 800,
-            color: 'var(--brand)',
-            margin: 0,
-            letterSpacing: 0.2
+            fontSize:'var(--h1-size)',
+            fontWeight:800,
+            color:'var(--brand)',
+            margin:'4px 0'
           }}>
             Jo&apos;s Coffee Time Clock
           </h1>
-          <p style={{ opacity: .7, margin: '6px 0' }}>{cafeName} • {cafeAddress}</p>
+          <p style={{opacity:.8, margin:0, fontSize:'var(--sub-size)'}}>
+            {cafeName} • {cafeAddress}
+          </p>
         </div>
 
         <KioskClock />
 
         <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: 'var(--gap)',
-          marginTop: 16
+          display:'grid',
+          gridTemplateColumns:'repeat(auto-fit, minmax(300px, 1fr))',
+          gap:'var(--gap)',
+          marginTop:16,
+          alignItems:'start'
         }}>
+          {/* Left card: PIN + keypad */}
           <article style={card}>
-            <label htmlFor="pin" style={{ position: 'absolute', left: -9999 }}>Employee PIN</label>
-            <div
-              id="pin"
-              ref={pinRef as any}
-              tabIndex={0}
-              aria-label="PIN entry display"
-              aria-live="polite"
-              style={{
-                height: 64,
-                border: '1px solid var(--border)',
-                borderRadius: 14,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 'var(--pin-font)',
-                letterSpacing: 6,
-                background: '#fff',
-                color: 'var(--brand)',
-                fontWeight: 700
-              }}
-            >
-              {pin || 'Enter PIN'}
+            <div style={{marginBottom:10, textAlign:'center'}}>
+              <div
+                id="pin"
+                ref={pinRef as any}
+                tabIndex={0}
+                aria-label="PIN entry display"
+                aria-live="polite"
+                style={{
+                  height:64,
+                  border:'1px solid var(--border)',
+                  borderRadius:'var(--radius)',
+                  display:'flex',
+                  alignItems:'center',
+                  justifyContent:'center',
+                  fontSize:'var(--pin-font)',
+                  letterSpacing:6,
+                  background:'#fff',
+                  color:'var(--brand)',
+                  fontWeight:700
+                }}
+              >
+                {pin || 'Enter PIN'}
+              </div>
             </div>
 
-            <div style={{ marginTop: 12 }}>
-              <PinKeypad value={pin} onChange={setPin} onEnter={submit} />
-            </div>
+            <PinKeypad value={pin} onChange={setPin} onEnter={submit} />
           </article>
 
-          <article style={{ ...card, display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--gap)' }}>
-              <button onClick={() => setAction('in')} style={actionBtn(action === 'in')} aria-pressed={action==='in'}>Time In</button>
-              <button onClick={() => setAction('out')} style={actionBtn(action === 'out')} aria-pressed={action==='out'}>Time Out</button>
+          {/* Right card: actions + note + submit */}
+          <article style={{...card, display:'flex', flexDirection:'column', gap:12}}>
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'var(--gap)'}}>
+              <button onClick={()=>setAction('in')} style={actionBtn(action==='in')} aria-pressed={action==='in'}>Time In</button>
+              <button onClick={()=>setAction('out')} style={actionBtn(action==='out')} aria-pressed={action==='out'}>Time Out</button>
             </div>
 
             <details>
-              <summary style={{ cursor: 'pointer', color: 'var(--brand)', fontWeight: 600, fontSize:'clamp(14px, 3.8vw, 16px)' }}>
+              <summary style={{cursor:'pointer', color:'var(--brand)', fontWeight:600, fontSize:'clamp(14px,3.8vw,16px)'}}>
                 Add a note (optional)
               </summary>
-              <div style={{ marginTop: 8 }}>
-                <label htmlFor="note" style={{ display: 'block', marginBottom: 6 }}>Note</label>
+              <div style={{marginTop:8}}>
+                <label htmlFor="note" style={{display:'block', marginBottom:6}}>Note</label>
                 <textarea
                   id="note"
                   value={note}
-                  onChange={(e) => setNote(e.target.value)}
+                  onChange={(e)=>setNote(e.target.value)}
                   placeholder="e.g. Late due to traffic"
                   style={{
-                    width: '100%',
-                    minHeight: 110,
-                    border: '1px solid var(--border)',
-                    borderRadius: 12,
-                    padding: 12,
-                    fontFamily: "'Poppins', sans-serif",
-                    fontSize: 'clamp(14px, 3.8vw, 16px)'
+                    width:'100%',
+                    minHeight:110,
+                    border:'1px solid var(--border)',
+                    borderRadius:12,
+                    padding:12,
+                    fontSize:'clamp(14px,3.8vw,16px)'
                   }}
                 />
               </div>
@@ -133,38 +136,36 @@ export default function App() {
 }
 
 const card: React.CSSProperties = {
-  position: 'relative',
-  border: '1px solid #e5edf6',
-  background: '#ffffff',
-  borderRadius: Number(getComputedStyle(document.documentElement).getPropertyValue('--card-radius').replace('px','')) || 16,
-  padding: 16,
-  boxShadow: '0 2px 8px rgba(2,48,105,0.06)'
+  position:'relative',
+  border:'1px solid #e7eef6',
+  background:'#fff',
+  borderRadius:16,
+  padding:16,
+  boxShadow:'0 6px 18px rgba(2,48,105,.08)'
 }
 
-const actionBtn = (active: boolean): React.CSSProperties => ({
-  height: 64,
-  fontSize: 'var(--btn-font)',
-  borderRadius: 14,
-  border: `2px solid ${active ? 'var(--brand)' : 'var(--border)'}`,
-  background: active ? 'var(--brand)' : '#ffffff',
-  color: active ? '#ffffff' : 'var(--brand)',
-  cursor: 'pointer',
-  fontWeight: 700,
-  fontFamily: "'Poppins', sans-serif',
-  touchAction: 'manipulation'
+const actionBtn = (active:boolean): React.CSSProperties => ({
+  height:64,
+  fontSize:'var(--btn-font)',
+  borderRadius:14,
+  border:`2px solid ${active ? 'var(--brand)' : 'var(--border)'}`,
+  background: active ? 'var(--brand)' : '#fff',
+  color: active ? '#fff' : 'var(--brand)',
+  cursor:'pointer',
+  fontWeight:700,
+  touchAction:'manipulation'
 })
 
 const submitBtn: React.CSSProperties = {
-  height: 70,
-  fontSize: 'var(--submit-font)',
-  borderRadius: 16,
-  border: 'none',
-  background: 'var(--brand)',
-  color: '#fff',
-  cursor: 'pointer',
-  marginTop: 'auto',
-  fontWeight: 800,
-  fontFamily: "'Poppins', sans-serif",
-  boxShadow: '0 4px 12px rgba(2,48,105,0.18)',
-  touchAction: 'manipulation'
+  height:70,
+  fontSize:'var(--submit-font)',
+  borderRadius:16,
+  border:'none',
+  background:'var(--brand)',
+  color:'#fff',
+  cursor:'pointer',
+  marginTop:'auto',
+  fontWeight:800,
+  boxShadow:'0 10px 24px rgba(2,48,105,.18)',
+  touchAction:'manipulation'
 }
