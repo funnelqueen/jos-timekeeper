@@ -48,7 +48,7 @@ export default function App() {
             <label htmlFor="pin" style={{position:'absolute', left:-9999}}>Employee PIN</label>
             <div id="pin" ref={pinRef as any} tabIndex={0} aria-label="PIN entry display" aria-live="polite"
               style={{height:56, border:'1px solid #ddd', borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center', fontSize:30, letterSpacing:6, background:'#fff'}}>
-              {masked || 'Enter PIN'}
+              {pin || 'Enter PIN'}
             </div>
             <div style={{marginTop:12}}>
               <PinKeypad value={pin} onChange={setPin} onEnter={submit} />
