@@ -34,6 +34,8 @@ export default function App() {
   }
 
   return (
+
+    
     <main style={{
       minHeight:'100vh',
       background:'var(--bg)',
@@ -130,6 +132,9 @@ export default function App() {
             </button>
           </article>
         </div>
+         {/* Admin */}
+        <AdminPanel />
+  
       </section>
     </main>
   )
@@ -169,3 +174,5 @@ const submitBtn: React.CSSProperties = {
   boxShadow:'0 10px 24px rgba(2,48,105,.18)',
   touchAction:'manipulation'
 }
+
+
