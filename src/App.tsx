@@ -34,8 +34,6 @@ export default function App() {
   }
 
   return (
-
-    
     <main style={{
       minHeight:'100vh',
       background:'var(--bg)',
@@ -43,7 +41,7 @@ export default function App() {
       fontFamily:"'Poppins',sans-serif"
     }}>
       <section style={{maxWidth:1080, margin:'0 auto'}}>
-        {/* Header (only one now) */}
+        {/* Header */}
         <div style={{textAlign:'center', marginBottom:12}}>
           <h1 style={{
             fontSize:'var(--h1-size)',
@@ -132,9 +130,9 @@ export default function App() {
             </button>
           </article>
         </div>
-         {/* Admin */}
+
+        {/* Admin */}
         <AdminPanel />
-  
       </section>
     </main>
   )
@@ -175,4 +173,143 @@ const submitBtn: React.CSSProperties = {
   touchAction:'manipulation'
 }
 
+/* ----------------------- Admin Panel ----------------------- */
+function AdminPanel() {
+  const [open, setOpen] = useState(false)
+  const [pass, setPass] = useState<string>(() => localStorage.getItem('admin_pass') || '')
+  const [loading, setLoading] = useState(false)
+  const [rows, setRows] = useState<Array<{id:string; full_name:string; pin_code:string; active:boolean}>>([])
+  const [err, setErr] = useState<string>('')
 
+  async function load() {
+    setLoading(true); setErr('')
+    try {
+      const res = await fetch('/api/admin/list-staff', {
+        headers: { 'x-admin-pass': pass }
+      })
+      const out = await res.json()
+      if (!res.ok || !out.ok) throw new Error(out.error || 'Failed to load')
+      setRows(out.staff || [])
+    } catch (e:any) {
+      setErr(e.message || 'Error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function openPanel() {
+    if (!pass) {
+      const p = prompt('Enter admin password')
+      if (!p) return
+      setPass(p)
+      localStorage.setItem('admin_pass', p)
+    }
+    setOpen(true)
+    setTimeout(load, 0)
+  }
+
+  async function saveRow(r: any, idx: number) {
+    setLoading(true); setErr('')
+    try {
+      const res = await fetch('/api/admin/update-pin', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'x-admin-pass': pass },
+        body: JSON.stringify({ id: r.id, pin_code: r.pin_code, active: r.active })
+      })
+      const out = await res.json()
+      if (!res.ok || !out.ok) throw new Error(out.error || 'Save failed')
+      const clone = rows.slice()
+      clone[idx] = out.staff
+      setRows(clone)
+      alert(`Saved for ${out.staff.full_name}`)
+    } catch (e:any) {
+      setErr(e.message || 'Error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div style={{marginTop: 18}}>
+      <button
+        onClick={openPanel}
+        style={{
+          border: '1px solid var(--border)',
+          background: '#fff', color: 'var(--brand)',
+          borderRadius: 12, padding: '10px 14px',
+          fontWeight: 700, cursor: 'pointer'
+        }}
+      >
+        Admin
+      </button>
+
+      {open && (
+        <div style={{
+          marginTop: 12, background:'#fff', border:'1px solid #e7eef6',
+          borderRadius: 16, padding: 12, boxShadow:'0 8px 20px rgba(2,48,105,.08)'
+        }}>
+          <div style={{display:'flex', alignItems:'center', gap:8, marginBottom:10}}>
+            <strong style={{color:'var(--brand)'}}>Staff & PINs</strong>
+            <button onClick={load} disabled={loading} style={miniBtn}>Reload</button>
+            <button
+              onClick={()=>{localStorage.removeItem('admin_pass'); setPass(''); alert('Password cleared for this device.')}} 
+              style={miniBtnOutline}
+            >
+              Forget password
+            </button>
+          </div>
+
+          {err && <div style={{color:'#b00020', marginBottom:8}}>{err}</div>}
+
+          <div style={{overflowX:'auto'}}>
+            <table style={{width:'100%', borderCollapse:'separate', borderSpacing:0}}>
+              <thead>
+                <tr>
+                  <th style={th}>Name</th>
+                  <th style={th}>PIN (4–6 digits)</th>
+                  <th style={th}>Active</th>
+                  <th style={th}></th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r, i) => (
+                  <tr key={r.id}>
+                    <td style={td}>{r.full_name}</td>
+                    <td style={td}>
+                      <input
+                        value={r.pin_code || ''}
+                        onChange={(e)=> {
+                          const v = e.target.value.replace(/[^\d]/g,'').slice(0,6)
+                          const clone = rows.slice(); clone[i] = {...r, pin_code: v}; setRows(clone)
+                        }}
+                        style={{width:120, padding:8, border:'1px solid var(--border)', borderRadius:8}}
+                      />
+                    </td>
+                    <td style={td}>
+                      <input
+                        type="checkbox"
+                        checked={!!r.active}
+                        onChange={(e)=>{ const clone = rows.slice(); clone[i] = {...r, active: e.target.checked}; setRows(clone) }}
+                      />
+                    </td>
+                    <td style={td}>
+                      <button onClick={()=>saveRow(r, i)} disabled={loading} style={miniBtn}>Save</button>
+                    </td>
+                  </tr>
+                ))}
+                {!rows.length && !loading && (
+                  <tr><td colSpan={4} style={{...td, opacity:.7}}>No staff yet. Add in Supabase or via SQL.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+const th: React.CSSProperties = { textAlign:'left', padding:'10px 8px', borderBottom:'1px solid #eef3f8', fontWeight:800, color:'var(--brand)', fontSize:'14px' }
+const td: React.CSSProperties = { padding:'10px 8px', borderBottom:'1px solid #f2f6fa', fontSize:'14px' }
+const miniBtn: React.CSSProperties = { padding:'8px 12px', borderRadius:8, border:'none', background:'var(--brand)', color:'#fff', fontWeight:700, cursor:'pointer' }
+const miniBtnOutline: React.CSSProperties = { padding:'8px 12px', borderRadius:8, border:'1px solid var(--border)', background:'#fff', color:'var(--brand)', fontWeight:700, cursor:'pointer' }
