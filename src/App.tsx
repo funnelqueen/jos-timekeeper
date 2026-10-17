@@ -39,7 +39,18 @@ export default function App() {
       // Keep the existing attendance RPC and its argument names unchanged.
       const { data, error } = await supabase.rpc('punch_with_pin', { _pin: pin, _action: chosenAction, _note: note || null })
       if (error) throw error
-      if (!data?.ok) { showFeedback({ok:false,title:'Not recorded',detail:data?.error ?? 'Please try again.'}); return }
+      if (!data?.ok) {
+        const reason = String(data?.error ?? '')
+        const friendly = reason === 'Already clocked in'
+          ? { title: 'Already timed in', detail: 'You’re already timed in. Please time out before timing in again.' }
+          : reason === 'No active shift'
+          ? { title: 'You haven’t timed in yet', detail: 'Please time in first before attempting to time out.' }
+          : reason === 'Invalid PIN'
+          ? { title: 'Invalid PIN', detail: 'That PIN wasn’t recognized. Please check and try again.' }
+          : { title: 'Attendance not recorded', detail: reason || 'Please try again.' }
+        showFeedback({ ok: false, ...friendly })
+        return
+      }
       showFeedback({ok:true,action:chosenAction,title:`${data.staff_name || 'Staff member'} successfully timed ${chosenAction === 'in' ? 'in' : 'out'}!`,detail:'Attendance successfully recorded.',time:new Intl.DateTimeFormat('en-PH',{timeZone:'Asia/Manila',hour:'numeric',minute:'2-digit',hour12:true}).format(new Date())})
     } catch (e: any) {
       showFeedback({ok:false,title:'Could not save attendance',detail:e?.message ?? 'Network error. Please try again.'})
@@ -52,7 +63,7 @@ export default function App() {
   }
 
   return <main className="jk-app">
-    {feedback && <div className="jk-toast-layer" role="presentation"><div className={`jk-toast ${feedback.ok ? (feedback.action === 'out' ? 'is-clock-out' : 'is-clock-in') : 'is-error'}`} role="alert" aria-live="assertive"><button type="button" className="jk-toast-close" aria-label="Dismiss notification" onClick={() => { if (popupTimer.current) clearTimeout(popupTimer.current); setFeedback(null) }}>×</button>{feedback.ok && <div className="jk-feedback-check" aria-hidden="true">✓</div>}<strong>{feedback.title}</strong><span>{feedback.detail}</span>{feedback.time && <span className="jk-feedback-time">{feedback.time} · Philippine time</span>}<div className="jk-toast-progress" aria-hidden="true" /></div></div>}
+    {feedback && <div className="jk-toast-layer" role="presentation"><div className={`jk-toast ${feedback.ok ? (feedback.action === 'out' ? 'is-clock-out' : 'is-clock-in') : 'is-error'}`} role="alert" aria-live="assertive"><button type="button" className="jk-toast-close" aria-label="Dismiss notification" onClick={() => { if (popupTimer.current) clearTimeout(popupTimer.current); setFeedback(null) }}>×</button><div className="jk-feedback-check" aria-hidden="true">{feedback.ok ? '✓' : '!'}</div><strong>{feedback.title}</strong><span>{feedback.detail}</span>{feedback.time && <span className="jk-feedback-time">{feedback.time} · Philippine time</span>}<div className="jk-toast-progress" aria-hidden="true" /></div></div>}
 
     <div className="jk-shell">
       <header className="jk-header">
